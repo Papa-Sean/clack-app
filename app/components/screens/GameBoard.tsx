@@ -7,7 +7,7 @@ import { Player, Tile as TileType } from '../GameUtils';
 interface GameBoardProps {
 	tiles: TileType[];
 	diceValues: number[];
-	score: number;
+	score: number[];
 	selectedTiles: number[];
 	players: Player[];
 	currentPlayerIndex: number;
@@ -62,7 +62,7 @@ export default function GameBoard({
 
 				<div className='card-actions justify-center mt-6'>
 					<ActionButtons
-						onRoll={(rollDice) => {
+						onRoll={() => {
 							// Add a little shake animation before rolling
 							document
 								.querySelector('.dice-container')
