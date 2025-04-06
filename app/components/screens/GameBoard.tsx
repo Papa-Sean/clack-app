@@ -30,8 +30,8 @@ export default function GameBoard({
 	onNewGame,
 }: GameBoardProps) {
 	return (
-		<div className='card w-full bg-base-200 shadow-xl mx-auto p-2 sm:p-6'>
-			<div className='card-body p-0'>
+		<div className='card w-full bg-base-200 shadow-xl mx-auto px-1 sm:px-3'>
+			<div className='card-body p-2 sm:p-4 md:p-6 w-full'>
 				<h1 className='card-title text-primary text-center text-2xl sm:text-3xl md:text-4xl font-bold neon-flicker mb-2 sm:mb-4 justify-center'>
 					Shut the Box
 				</h1>
@@ -44,8 +44,8 @@ export default function GameBoard({
 					</div>
 				)}
 
-				{/* Tile Row - Fully responsive */}
-				<div className='flex flex-wrap justify-center gap-1 sm:gap-2 mb-4 sm:mb-6 w-full px-1 sm:px-2'>
+				{/* Tile Row - Single row with dynamic sizing */}
+				<div className='grid grid-cols-9 gap-[1vw] sm:gap-2 mb-4 sm:mb-6 w-full'>
 					{tiles.map((tile, index) => (
 						<Tile
 							key={index}
