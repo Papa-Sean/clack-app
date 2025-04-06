@@ -8,7 +8,7 @@ export default function CountdownOverlay({ countdown }: CountdownOverlayProps) {
 			<div className='card w-full max-w-md bg-base-300 shadow-xl'>
 				<div className='card-body items-center'>
 					<h2 className='text-2xl text-error mb-4 neon-flicker'>
-						The numbers ain't numbering, Will Hunting...
+						The numbers ain&apos;t numbering, Will Hunting...
 					</h2>
 					<div className='countdown font-mono text-6xl text-primary'>
 						<span
