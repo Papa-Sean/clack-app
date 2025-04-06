@@ -7,7 +7,7 @@ import { Player, Tile as TileType } from '../GameUtils';
 interface GameBoardProps {
 	tiles: TileType[];
 	diceValues: number[];
-	score: number; // Changed from number[] to number
+	score: number;
 	selectedTiles: number[];
 	players: Player[];
 	currentPlayerIndex: number;
@@ -30,21 +30,22 @@ export default function GameBoard({
 	onNewGame,
 }: GameBoardProps) {
 	return (
-		<div className='card w-full max-w-md bg-base-200 shadow-xl mx-auto p-6'>
+		<div className='card w-full bg-base-200 shadow-xl mx-auto p-2 sm:p-6'>
 			<div className='card-body p-0'>
-				<h1 className='card-title text-primary text-center text-3xl md:text-4xl font-bold neon-flicker mb-4 justify-center'>
+				<h1 className='card-title text-primary text-center text-2xl sm:text-3xl md:text-4xl font-bold neon-flicker mb-2 sm:mb-4 justify-center'>
 					Shut the Box
 				</h1>
 
 				{players.length > 0 && (
-					<div className='badge badge-lg badge-secondary w-full justify-center mb-6 py-3'>
-						<span className='text-lg font-bold'>
+					<div className='badge badge-lg badge-secondary w-full justify-center mb-3 sm:mb-6 py-2 sm:py-3'>
+						<span className='text-base sm:text-lg font-bold'>
 							Player: {players[currentPlayerIndex].name}
 						</span>
 					</div>
 				)}
 
-				<div className='flex flex-wrap justify-center gap-2 mb-6'>
+				{/* Tile Row - Fully responsive */}
+				<div className='flex flex-wrap justify-center gap-1 sm:gap-2 mb-4 sm:mb-6 w-full px-1 sm:px-2'>
 					{tiles.map((tile, index) => (
 						<Tile
 							key={index}
@@ -60,7 +61,7 @@ export default function GameBoard({
 
 				<ScoreDisplay score={score} />
 
-				<div className='card-actions justify-center mt-6'>
+				<div className='card-actions justify-center mt-4 sm:mt-6'>
 					<ActionButtons
 						onRoll={() => {
 							// Add a little shake animation before rolling

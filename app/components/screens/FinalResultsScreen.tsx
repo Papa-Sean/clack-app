@@ -1,46 +1,81 @@
 import { Player, getWinner } from '../GameUtils';
 
 interface FinalResultsScreenProps {
-  players: Player[];
-  onNewGame: () => void;
+	players: Player[];
+	onNewGame: () => void;
 }
 
-export default function FinalResultsScreen({ players, onNewGame }: FinalResultsScreenProps) {
-  const winner = getWinner(players);
+export default function FinalResultsScreen({
+	players,
+	onNewGame,
+}: FinalResultsScreenProps) {
+	const winner = getWinner(players);
 
-  return (
-    <div className="flex flex-col items-center p-8 bg-gray-50 rounded-lg shadow-xl max-w-[600px] mx-auto my-8">
-      <h2 className="text-4xl text-gray-800 mb-8">Game Results</h2>
-      
-      <div className="bg-amber-50 p-6 rounded-lg mb-8 text-center w-full shadow-sm">
-        <h3 className="text-2xl text-orange-500 m-0 mb-2">🏆 Winner: {winner?.name} 🏆</h3>
-        <p className="text-lg">Score: {winner?.score}</p>
-      </div>
-      
-      <div className="w-full bg-white p-6 rounded-lg shadow-sm">
-        <h3 className="text-center m-0 text-gray-600">All Scores</h3>
-        <ul className="list-none p-0">
-          {players
-            .sort((a, b) => a.score - b.score)
-            .map((player, index) => (
-              <li
-                key={index}
-                className={`py-3 px-3 border-b border-gray-100 text-lg
-                          ${player === winner ? 'font-bold text-orange-500 bg-amber-50/50' : ''}`}
-              >
-                {player.name}: {player.score}
-              </li>
-            ))}
-        </ul>
-      </div>
-      
-      <button 
-        onClick={onNewGame}
-        className="bg-green-500 text-white text-xl py-3 px-8 border-none rounded 
-                  cursor-pointer mt-8 transition-colors hover:bg-green-700"
-      >
-        New Game
-      </button>
-    </div>
-  );
+	return (
+		<div className='min-h-screen flex items-center justify-center p-4'>
+			<div className='card w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-base-200 shadow-xl'>
+				<div className='card-body p-4 sm:p-6'>
+					<h2 className='card-title text-primary text-center text-2xl sm:text-3xl md:text-4xl justify-center mb-4 sm:mb-6'>
+						Game Results
+					</h2>
+
+					<div className='card bg-base-300 mb-4 sm:mb-6'>
+						<div className='card-body p-3 sm:p-4 text-center'>
+							<h3 className='card-title text-xl sm:text-2xl text-secondary m-0 justify-center'>
+								🏆 Winner: {winner?.name} 🏆
+							</h3>
+							<p className='text-accent text-lg'>
+								Score: {winner?.score}
+							</p>
+						</div>
+					</div>
+
+					<div className='overflow-x-auto'>
+						<table className='table table-zebra w-full'>
+							<thead>
+								<tr>
+									<th className='text-center text-base-content'>
+										Player
+									</th>
+									<th className='text-center text-base-content'>
+										Score
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{players
+									.sort((a, b) => a.score - b.score)
+									.map((player, index) => (
+										<tr
+											key={index}
+											className={
+												player === winner
+													? 'font-bold bg-primary/10'
+													: ''
+											}
+										>
+											<td className='text-center'>
+												{player.name}
+											</td>
+											<td className='text-center'>
+												{player.score}
+											</td>
+										</tr>
+									))}
+							</tbody>
+						</table>
+					</div>
+
+					<div className='card-actions justify-center mt-4 sm:mt-6'>
+						<button
+							onClick={onNewGame}
+							className='btn btn-primary btn-lg'
+						>
+							New Game
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }

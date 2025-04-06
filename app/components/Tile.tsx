@@ -9,7 +9,9 @@ export default function Tile({ value, active, selected, onClick }: TileProps) {
 	return (
 		<button
 			className={`
-        btn btn-lg w-16 h-16 md:w-20 md:h-20 text-2xl md:text-3xl font-bold
+        btn aspect-square h-auto
+        w-[calc(11%-2px)] sm:w-[calc(11%-4px)] 
+        text-lg sm:text-xl md:text-2xl font-bold
         transition-all duration-300 transform perspective-500 tile-flip
         ${
 			active
