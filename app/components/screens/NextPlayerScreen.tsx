@@ -18,7 +18,7 @@ export default function NextPlayerScreen({
 					</h2>
 					<div className='py-6'>
 						<h3 className='text-2xl text-secondary mb-2'>
-							{player.name}'s Turn
+							{player.name}&apos;s Turn
 						</h3>
 						<p className='text-accent'>
 							Get ready to shut the box!

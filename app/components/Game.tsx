@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PlayerSetup from './PlayerSetup';
 import GameBoard from './screens/GameBoard';
 import NextPlayerScreen from './screens/NextPlayerScreen';
@@ -33,6 +33,40 @@ export default function Game() {
 	// Player management
 	const [players, setPlayers] = useState<Player[]>([]);
 	const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+
+	// Handle game end (when countdown reaches 0) - MOVED THIS UP
+	const handleGameEnd = useCallback(() => {
+		if (players.length > 0) {
+			const updatedPlayers = [...players];
+			updatedPlayers[currentPlayerIndex] = {
+				...updatedPlayers[currentPlayerIndex],
+				score: score,
+				hasPlayed: true,
+			};
+			setPlayers(updatedPlayers);
+
+			// Check if all players have played
+			const nextPlayerIndex = findNextPlayerIndex(
+				currentPlayerIndex,
+				updatedPlayers
+			);
+			if (nextPlayerIndex === -1) {
+				setGameState('finalResults');
+			} else {
+				setCurrentPlayerIndex(nextPlayerIndex);
+				setGameState('nextPlayer');
+			}
+		} else {
+			setGameState('gameOver');
+		}
+	}, [
+		players,
+		currentPlayerIndex,
+		score,
+		setPlayers,
+		setCurrentPlayerIndex,
+		setGameState,
+	]);
 
 	// Calculate score whenever tiles change
 	useEffect(() => {
@@ -71,34 +105,7 @@ export default function Game() {
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
-	}, [gameState, countdown]);
-
-	// Handle game end (when countdown reaches 0)
-	const handleGameEnd = () => {
-		if (players.length > 0) {
-			const updatedPlayers = [...players];
-			updatedPlayers[currentPlayerIndex] = {
-				...updatedPlayers[currentPlayerIndex],
-				score: score,
-				hasPlayed: true,
-			};
-			setPlayers(updatedPlayers);
-
-			// Check if all players have played
-			const nextPlayerIndex = findNextPlayerIndex(
-				currentPlayerIndex,
-				updatedPlayers
-			);
-			if (nextPlayerIndex === -1) {
-				setGameState('finalResults');
-			} else {
-				setCurrentPlayerIndex(nextPlayerIndex);
-				setGameState('nextPlayer');
-			}
-		} else {
-			setGameState('gameOver');
-		}
-	};
+	}, [gameState, countdown, handleGameEnd]);
 
 	// Roll the dice
 	const rollDice = () => {

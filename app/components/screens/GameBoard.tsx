@@ -7,7 +7,7 @@ import { Player, Tile as TileType } from '../GameUtils';
 interface GameBoardProps {
 	tiles: TileType[];
 	diceValues: number[];
-	score: number[];
+	score: number; // Changed from number[] to number
 	selectedTiles: number[];
 	players: Player[];
 	currentPlayerIndex: number;
