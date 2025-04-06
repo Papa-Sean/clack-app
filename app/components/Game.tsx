@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
-import Tile from './Tile';
-import Dice from './Dice';
-import ScoreDisplay from './ScoreDisplay';
-import ActionButtons from './ActionButtons';
 import PlayerSetup from './PlayerSetup';
-
-// Define player interface
-interface Player {
-	name: string;
-	score: number;
-	hasPlayed: boolean;
-}
+import GameBoard from './screens/GameBoard';
+import NextPlayerScreen from './screens/NextPlayerScreen';
+import FinalResultsScreen from './screens/FinalResultsScreen';
+import GameOverScreen from './screens/GameOverScreen';
+import CelebrationScreen from './screens/CelebrationScreen';
+import CountdownOverlay from './overlays/CountdownOverlay';
+import {
+	Player,
+	Tile,
+	findNextPlayerIndex,
+	hasValidMove,
+	shuffleArray,
+} from './GameUtils';
 
 export default function Game() {
 	// Game state
-	const [tiles, setTiles] = useState(
+	const [tiles, setTiles] = useState<Tile[]>(
 		Array(9)
 			.fill(null)
 			.map((_, i) => ({
@@ -43,7 +45,7 @@ export default function Game() {
 		setScore(newScore);
 
 		// Check if game is over (no valid moves)
-		if (gameState === 'selecting' && !hasValidMove()) {
+		if (gameState === 'selecting' && !hasValidMove(tiles, diceValues)) {
 			setGameState('countdown'); // Start countdown instead of going straight to game over
 			setCountdown(5); // Reset countdown to 5
 		}
@@ -52,7 +54,7 @@ export default function Game() {
 		if (newScore === 0) {
 			setGameState('celebration');
 		}
-	}, [tiles, gameState]);
+	}, [tiles, gameState, diceValues]);
 
 	// Handle countdown timer
 	useEffect(() => {
@@ -63,67 +65,39 @@ export default function Game() {
 				setCountdown(countdown - 1);
 			}, 1000);
 		} else if (gameState === 'countdown' && countdown === 0) {
-			// Save current player's score
-			if (players.length > 0) {
-				const updatedPlayers = [...players];
-				updatedPlayers[currentPlayerIndex] = {
-					...updatedPlayers[currentPlayerIndex],
-					score: score,
-					hasPlayed: true,
-				};
-				setPlayers(updatedPlayers);
-
-				// Check if all players have played
-				const nextPlayerIndex = findNextPlayerIndex(
-					currentPlayerIndex,
-					updatedPlayers
-				);
-				if (nextPlayerIndex === -1) {
-					setGameState('finalResults');
-				} else {
-					setCurrentPlayerIndex(nextPlayerIndex);
-					setGameState('nextPlayer');
-				}
-			} else {
-				setGameState('gameOver');
-			}
+			handleGameEnd();
 		}
 
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
-	}, [gameState, countdown, players, currentPlayerIndex, score]);
+	}, [gameState, countdown]);
 
-	// Find the next player who hasn't played yet
-	const findNextPlayerIndex = (
-		currentIndex: number,
-		playerList: Player[]
-	): number => {
-		for (let i = 1; i <= playerList.length; i++) {
-			const index = (currentIndex + i) % playerList.length;
-			if (!playerList[index].hasPlayed) {
-				return index;
+	// Handle game end (when countdown reaches 0)
+	const handleGameEnd = () => {
+		if (players.length > 0) {
+			const updatedPlayers = [...players];
+			updatedPlayers[currentPlayerIndex] = {
+				...updatedPlayers[currentPlayerIndex],
+				score: score,
+				hasPlayed: true,
+			};
+			setPlayers(updatedPlayers);
+
+			// Check if all players have played
+			const nextPlayerIndex = findNextPlayerIndex(
+				currentPlayerIndex,
+				updatedPlayers
+			);
+			if (nextPlayerIndex === -1) {
+				setGameState('finalResults');
+			} else {
+				setCurrentPlayerIndex(nextPlayerIndex);
+				setGameState('nextPlayer');
 			}
+		} else {
+			setGameState('gameOver');
 		}
-		return -1; // All players have played
-	};
-
-	// Check if there are valid moves available
-	const hasValidMove = () => {
-		const activeTileValues = tiles
-			.filter((tile) => tile.active)
-			.map((tile) => tile.value);
-
-		const diceSum = diceValues[0] + (diceValues[1] || 0);
-
-		// Check if any combination of active tiles sums to the dice total
-		// This is a simplified check that doesn't handle all combinations
-		return (
-			activeTileValues.some((value) => value === diceSum) ||
-			activeTileValues.some((v1, i) =>
-				activeTileValues.some((v2, j) => i !== j && v1 + v2 === diceSum)
-			)
-		);
 	};
 
 	// Roll the dice
@@ -215,158 +189,101 @@ export default function Game() {
 		setGameState('rolling');
 	};
 
-	// Fisher-Yates shuffle algorithm
-	const shuffleArray = <T,>(array: T[]): T[] => {
-		const newArray = [...array];
-		for (let i = newArray.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+	// Handle celebration continue
+	const handleCelebrationContinue = () => {
+		const updatedPlayers = [...players];
+		updatedPlayers[currentPlayerIndex] = {
+			...updatedPlayers[currentPlayerIndex],
+			score: 0,
+			hasPlayed: true,
+		};
+		setPlayers(updatedPlayers);
+
+		// Check if all players have played
+		const nextPlayerIndex = findNextPlayerIndex(
+			currentPlayerIndex,
+			updatedPlayers
+		);
+		if (nextPlayerIndex === -1) {
+			setGameState('finalResults');
+		} else {
+			setCurrentPlayerIndex(nextPlayerIndex);
+			setGameState('nextPlayer');
 		}
-		return newArray;
 	};
 
-	// Get winner information
-	const getWinner = () => {
-		if (players.length === 0) return null;
+	// Render different game states with a smooth transition
+	const renderGameState = () => {
+		switch (gameState) {
+			case 'setup':
+				return (
+					<div className='transition-all duration-500 animate-fade-in'>
+						<PlayerSetup onSubmit={handlePlayerSetup} />
+					</div>
+				);
 
-		return players.reduce((prev, current) =>
-			current.score < prev.score ? current : prev
-		);
+			case 'nextPlayer':
+				return (
+					<div className='transition-all duration-500 animate-slide-up'>
+						<NextPlayerScreen
+							player={players[currentPlayerIndex]}
+							onStartTurn={startNextPlayerTurn}
+						/>
+					</div>
+				);
+
+			case 'finalResults':
+				return (
+					<div className='transition-all duration-500 animate-slide-up'>
+						<FinalResultsScreen
+							players={players}
+							onNewGame={newGame}
+						/>
+					</div>
+				);
+
+			default:
+				return (
+					<div className='transition-all duration-300'>
+						<GameBoard
+							tiles={tiles}
+							diceValues={diceValues}
+							score={score}
+							selectedTiles={selectedTiles}
+							players={players}
+							currentPlayerIndex={currentPlayerIndex}
+							gameState={gameState}
+							onTileClick={handleTileClick}
+							onRoll={rollDice}
+							onNewGame={newGame}
+						/>
+
+						{gameState === 'countdown' && (
+							<CountdownOverlay countdown={countdown} />
+						)}
+
+						{gameState === 'gameOver' && (
+							<GameOverScreen
+								score={score}
+								onNewGame={newGame}
+							/>
+						)}
+
+						{gameState === 'celebration' && (
+							<CelebrationScreen
+								isMultiplayer={players.length > 0}
+								onContinue={handleCelebrationContinue}
+								onNewGame={newGame}
+							/>
+						)}
+					</div>
+				);
+		}
 	};
-
-	// Render different game states
-	if (gameState === 'setup') {
-		return <PlayerSetup onSubmit={handlePlayerSetup} />;
-	}
-
-	if (gameState === 'nextPlayer') {
-		return (
-			<div className='next-player-screen'>
-				<h2>Next Player</h2>
-				<div className='player-info'>
-					<h3>{players[currentPlayerIndex].name}'s Turn</h3>
-					<p>Get ready to shut the box!</p>
-				</div>
-				<button onClick={startNextPlayerTurn}>Start Turn</button>
-			</div>
-		);
-	}
-
-	if (gameState === 'finalResults') {
-		const winner = getWinner();
-
-		return (
-			<div className='final-results'>
-				<h2>Game Results</h2>
-				<div className='winner-info'>
-					<h3>🏆 Winner: {winner?.name} 🏆</h3>
-					<p>Score: {winner?.score}</p>
-				</div>
-				<div className='all-scores'>
-					<h3>All Scores</h3>
-					<ul>
-						{players
-							.sort((a, b) => a.score - b.score)
-							.map((player, index) => (
-								<li
-									key={index}
-									className={
-										player === winner ? 'winner' : ''
-									}
-								>
-									{player.name}: {player.score}
-								</li>
-							))}
-					</ul>
-				</div>
-				<button onClick={newGame}>New Game</button>
-			</div>
-		);
-	}
 
 	return (
-		<div className='game-container'>
-			<h1>Shut the Box</h1>
-
-			{players.length > 0 && (
-				<div className='current-player'>
-					<h2>Player: {players[currentPlayerIndex].name}</h2>
-				</div>
-			)}
-
-			<div className='tiles-container'>
-				{tiles.map((tile, index) => (
-					<Tile
-						key={index}
-						value={tile.value}
-						active={tile.active}
-						selected={selectedTiles.includes(index)}
-						onClick={() => handleTileClick(index)}
-					/>
-				))}
-			</div>
-
-			<Dice values={diceValues} />
-
-			<ScoreDisplay score={score} />
-
-			<ActionButtons
-				onRoll={rollDice}
-				onNewGame={newGame}
-				gameState={gameState}
-			/>
-
-			{gameState === 'countdown' && (
-				<div className='countdown-overlay'>
-					<h2>The numbers ain't numbering, Will Hunting...</h2>
-					<p>Game ending in: {countdown}</p>
-				</div>
-			)}
-
-			{gameState === 'gameOver' && (
-				<div className='game-over'>
-					<h2>Game Over!</h2>
-					<p>Your final score: {score}</p>
-					<button onClick={newGame}>Play Again</button>
-				</div>
-			)}
-
-			{gameState === 'celebration' && (
-				<div className='celebration'>
-					<h2>Perfect Game!</h2>
-					<p>You shut the box! Score: 0</p>
-					{players.length > 0 ? (
-						<button
-							onClick={() => {
-								// Save current player's score
-								const updatedPlayers = [...players];
-								updatedPlayers[currentPlayerIndex] = {
-									...updatedPlayers[currentPlayerIndex],
-									score: 0,
-									hasPlayed: true,
-								};
-								setPlayers(updatedPlayers);
-
-								// Check if all players have played
-								const nextPlayerIndex = findNextPlayerIndex(
-									currentPlayerIndex,
-									updatedPlayers
-								);
-								if (nextPlayerIndex === -1) {
-									setGameState('finalResults');
-								} else {
-									setCurrentPlayerIndex(nextPlayerIndex);
-									setGameState('nextPlayer');
-								}
-							}}
-						>
-							Continue
-						</button>
-					) : (
-						<button onClick={newGame}>Play Again</button>
-					)}
-				</div>
-			)}
+		<div className='min-h-screen bg-base-100 flex flex-col justify-center items-center p-4'>
+			{renderGameState()}
 		</div>
 	);
 }

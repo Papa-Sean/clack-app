@@ -10,19 +10,26 @@ export default function ActionButtons({
 	gameState,
 }: ActionButtonsProps) {
 	return (
-		<div className='action-buttons'>
+		<div className='flex flex-col sm:flex-row gap-4 w-full justify-center'>
 			<button
-				className='roll-button'
+				className={`
+          btn btn-lg ${
+				gameState === 'rolling'
+					? 'btn-primary neon-flicker'
+					: 'btn-disabled'
+			}
+        `}
 				onClick={onRoll}
 				disabled={gameState !== 'rolling'}
 			>
-				Roll Dice
+				<span className='mr-2'>🎲</span> Roll Dice
 			</button>
+
 			<button
-				className='new-game-button'
+				className='btn btn-lg btn-secondary'
 				onClick={onNewGame}
 			>
-				New Game
+				<span className='mr-2'>🔄</span> New Game
 			</button>
 		</div>
 	);

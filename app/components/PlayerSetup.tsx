@@ -58,13 +58,21 @@ export default function PlayerSetup({ onSubmit }: PlayerSetupProps) {
 	};
 
 	return (
-		<div className='player-setup'>
-			<h1>Shut the Box</h1>
-			<h2>Player Setup</h2>
+		<div className='flex flex-col items-center gap-6 max-w-[500px] mx-auto p-8 bg-white rounded-lg shadow-lg'>
+			<h1 className='text-gray-800 mb-0'>Shut the Box</h1>
+			<h2 className='text-gray-600 mt-0'>Player Setup</h2>
 
-			<form onSubmit={handleSubmit}>
-				<div className='form-group'>
-					<label htmlFor='numPlayers'>Number of Players:</label>
+			<form
+				onSubmit={handleSubmit}
+				className='w-full flex flex-col gap-6'
+			>
+				<div className='flex flex-col gap-2'>
+					<label
+						htmlFor='numPlayers'
+						className='font-bold text-gray-600'
+					>
+						Number of Players:
+					</label>
 					<input
 						type='number'
 						id='numPlayers'
@@ -72,17 +80,21 @@ export default function PlayerSetup({ onSubmit }: PlayerSetupProps) {
 						max='6'
 						value={numPlayers}
 						onChange={handleNumPlayersChange}
+						className='p-3 border border-gray-300 rounded-md text-base'
 					/>
 				</div>
 
-				<div className='player-names'>
-					<h3>Enter Player Names</h3>
+				<div className='flex flex-col gap-4 w-full'>
+					<h3 className='m-0 text-gray-600'>Enter Player Names</h3>
 					{playerNames.map((name, index) => (
 						<div
-							className='form-group'
+							className='flex flex-col gap-2'
 							key={index}
 						>
-							<label htmlFor={`player-${index + 1}`}>
+							<label
+								htmlFor={`player-${index + 1}`}
+								className='font-bold text-gray-600'
+							>
 								Player {index + 1}:
 							</label>
 							<input
@@ -96,28 +108,34 @@ export default function PlayerSetup({ onSubmit }: PlayerSetupProps) {
 									)
 								}
 								maxLength={20}
+								className='p-3 border border-gray-300 rounded-md text-base'
 							/>
 						</div>
 					))}
 				</div>
 
-				<div className='form-group checkbox'>
+				<div className='flex flex-row items-center gap-3'>
 					<input
 						type='checkbox'
 						id='randomizeOrder'
 						checked={randomizeOrder}
 						onChange={(e) => setRandomizeOrder(e.target.checked)}
+						className='w-5 h-5'
 					/>
-					<label htmlFor='randomizeOrder'>
+					<label
+						htmlFor='randomizeOrder'
+						className='font-bold text-primary'
+					>
 						Randomize Player Order
 					</label>
 				</div>
 
-				{error && <div className='error'>{error}</div>}
+				{error && <div className='text-red-600 font-bold'>{error}</div>}
 
 				<button
 					type='submit'
-					className='start-game-btn'
+					className='bg-green-500 text-white text-lg font-bold py-3 border-none rounded 
+								cursor-pointer mt-4 transition-colors hover:bg-green-700'
 				>
 					Start Game
 				</button>
